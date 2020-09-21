@@ -11,10 +11,13 @@ bot.start((ctx) => ctx.reply('Welcome!'));
 
 //When it detects any text
 bot.on('message', (ctx) => {
+    //Get emoji associated to the sticker
     var stickerEmoji = ctx.message.sticker.emoji;
 
+    //Find if the emoji is in the dictionary
     if(stickerEmoji in dict) {
         //Leaving start as a master "cancel" command
+        //Clear then start a new array
         if(dict[stickerEmoji] == "start") {
             global.kitaArr = [];
             global.kitaArr.push(dict[stickerEmoji]);
@@ -22,6 +25,7 @@ bot.on('message', (ctx) => {
             return;
         }
 
+        //If kitaportal is true, dont accept any other inputs except for portal out
         if(dict[stickerEmoji] == "portal_out") {
             if(!global.kitaPortal) {
                 return;
@@ -29,23 +33,30 @@ bot.on('message', (ctx) => {
             global.kitaPortal = false;
         }
 
+        //condition for portal
         if(!global.kitaPortal) {
 
-            if(dict[stickerEmoji] == "end" || dict[stickerEmoji] == "end_portal") {
+            //End and send array
+            if(dict[stickerEmoji] == "end" || dict[stickerEmoji] == "end_box") {
                 global.kitaArr.push(dict[stickerEmoji]);
                 PrintBuzz(global.kitaArr);
+                ctx.reply(global.kitaArr);
                 global.kitaArr = [];
                 return;
             }
 
+            //Looking for a portal in
             if(dict[stickerEmoji] == "portal_in") {
                 global.kitaPortal = true;
             }
+            //generic add emoji to array
             global.kitaArr.push(dict[stickerEmoji]);
         }
     }
 });
 
+//Stub printing command
+//replace with buzzzing
 function PrintBuzz(arr) {
     console.log(arr);
 }
@@ -53,6 +64,8 @@ function PrintBuzz(arr) {
 //Start the bot with a little message
 bot.launch().then((o, e) => {
     console.log("Starting bot...");
+
+    //init globals
     global.kitaArr = new Array;
     global.kitaPortal = false;
 });
