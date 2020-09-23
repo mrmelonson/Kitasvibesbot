@@ -8,9 +8,12 @@ const ButtplugWebsocket = require("buttplug-node-websockets");
 //Dont share this key
 const bot = new Telegraf(key.key);
 
+
 const connector = new ButtplugWebsocket.ButtplugNodeWebsocketClientConnector("ws://localhost:12345/buttplug", false);
+
 var client = new Buttplug.ButtplugClient("Test");
 
+//Connect to intiface then scan for devices
 client.Connect(connector).then((o,e) => {
         console.log("Connected to intiface");
         client.StartScanning().then((o,e) => {
@@ -18,6 +21,7 @@ client.Connect(connector).then((o,e) => {
     });
 });
 
+//Listen for device connection
 client.addListener("deviceadded", async (device) => {
 
     //try /start in the bot's dms
@@ -72,9 +76,28 @@ client.addListener("deviceadded", async (device) => {
     });
 
     //Stub printing command
-    //replace with buzzzing
-    function PrintBuzz(arr) {
+    //replaced with buzzzing
+    async function PrintBuzz(arr) {
         console.log(arr);
+        for (let i = 0; i < arr.length; i++) {
+            console.log(arr[i]);
+            switch(arr[i]) {
+                //For all listed conditions buzz for 1 second (currently) (WILL CHANGE)
+                case 'start':
+                case 'end':
+                case 'end_box':
+                case 'long':
+                    console.log("buzz");
+                    await device.SendVibrateCmd(0.1);
+                    break;
+                default:
+                    console.log("default buzz");
+            } 
+            await timeout(1000);
+            //Stop the good vibes (for now)
+            await device.SendVibrateCmd(0);
+        }
+        console.log("--- END ---")
     }
 
     //Start the bot with a little message
@@ -87,4 +110,20 @@ client.addListener("deviceadded", async (device) => {
     });
 
 });
+
+
+//NOT CURRENTLY USED
+async function Vibrate(device, time, intensity) {
+    await device.SendVibrateCmd(intensity);
+
+    setTimeout(async () => {
+        await device.SendVibrateCmd(0);
+    }, time);
+    return;
+}
+
+//Sleep
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
